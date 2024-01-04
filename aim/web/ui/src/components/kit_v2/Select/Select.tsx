@@ -1,6 +1,8 @@
 import React from 'react';
 import { FixedSizeList as List } from 'react-window';
 
+import { IconCaretDown, IconCaretUp } from '@tabler/icons-react';
+
 import Popover from '../Popover';
 import Button from '../Button';
 import Box from '../Box';
@@ -20,6 +22,7 @@ const sizeDict = {
  * @description Virtualized Select component with search
  * @param {boolean} multiple - whether multiple select
  * @param {React.ReactNode} trigger - trigger element
+ * @param triggerProps
  * @param {PopoverProps} popoverProps - popover props
  * @param {string | string[] | undefined } value - selected value
  * @param {(val: string | string[]) => void} onValueChange - on value change callback
@@ -32,6 +35,7 @@ const sizeDict = {
 const Select = ({
   multiple,
   trigger,
+  triggerProps,
   popoverProps,
   value,
   onValueChange,
@@ -39,9 +43,9 @@ const Select = ({
   options = [],
   size = 'md',
   height = 256,
+  disabled = false,
 }: ISelectProps) => {
   const [search, setSearch] = React.useState('');
-
   const onSearchChange = React.useCallback((e) => {
     setSearch(e.target.value);
   }, []);
@@ -152,11 +156,42 @@ const Select = ({
     value,
   ]);
 
+  const triggerPlaceholder = React.useMemo(() => {
+    if (multiple) {
+      return 'Select';
+    }
+    if (value) {
+      const selected = flattenOptions?.find((item) => item.value === value);
+      if (selected) {
+        return selected.label as string;
+      }
+    }
+    return 'Select';
+  }, [flattenOptions, multiple, value]);
+
   return (
     <Popover
-      {...popoverProps}
-      popperProps={{ css: { p: '$5 0' } }}
-      trigger={({ open }) => trigger || <Button size={size}>Select</Button>}
+      popperProps={{
+        ...popoverProps,
+        css: { p: '$5 0', ...popoverProps?.css },
+      }}
+      trigger={({ open }) =>
+        typeof trigger === 'function'
+          ? trigger(open)
+          : trigger || (
+              <Button
+                disabled={disabled}
+                variant='outlined'
+                color='secondary'
+                rightIcon={open ? <IconCaretUp /> : <IconCaretDown />}
+                {...triggerProps}
+              >
+                <Text css={{ flex: '1' }} disabled={disabled}>
+                  {triggerPlaceholder}
+                </Text>
+              </Button>
+            )
+      }
       content={
         <>
           {searchable ? (
