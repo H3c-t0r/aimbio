@@ -97,6 +97,8 @@ jobs:
       
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: false
         
       - name: Build bdist wheels for 'cp37-cp37m'
         uses: nick-fields/retry@v2
